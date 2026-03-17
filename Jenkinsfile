@@ -3,6 +3,7 @@ pipeline {
     tools {
         maven "MAVEN3.9"
         jdk "JDK17"
+
     }
     
     environment {
@@ -13,7 +14,7 @@ pipeline {
 		CENTRAL_REPO = 'vpro-maven-central'
 		NEXUSIP = '172.31.33.154'
 		NEXUSPORT = '8081'
-		NEXUS_GRP_REPO = 'vprofile-maven-group'
+		NEXUS_GRP_REPO = 'vpro-maven-group'
         NEXUS_LOGIN = 'nexus-login'
     }
 
@@ -21,6 +22,25 @@ pipeline {
         stage('Build'){
             steps {
                 sh 'mvn -s settings.xml -DskipTests install'
+            }
+            post {
+                success {
+                    echo "Now Archiving."
+                    archiveArtifacts artifacts: '**/*.war'
+                }
+            }
+        }
+
+        stage('Test'){
+            steps {
+                sh 'mvn -s settings.xml test'
+            }
+
+        }
+
+        stage('Checkstyle Analysis'){
+            steps {
+                sh 'mvn -s settings.xml checkstyle:checkstyle'
             }
         }
     }
